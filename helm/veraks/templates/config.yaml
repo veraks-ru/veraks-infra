@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: veraks-config
+  labels:
+    {{- include "veraks.labels" . | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.env.appEnv | quote }}
+  APP_DEBUG: "false"
+  REDIS_URL: "redis://veraks-redis:6379/0"
+  # CORS: фронт на app-домене шлёт запросы к api-домену с credentials (cookie).
+  CORS_ALLOW_ORIGINS: "https://{{ .Values.domains.app }}"
+  # Cookie: Secure (публичный HTTPS) + общий домен .veraks.ru, чтобы сессия
+  # ходила между veraks.ru и api.veraks.ru.
+  SECURITY_COOKIE_SECURE: "true"
+  SECURITY_COOKIE_DOMAIN: {{ .Values.env.cookieDomain | quote }}
+  RESOLUTIONS_DISPUTE_WINDOW_HOURS: {{ .Values.env.disputeWindowHours | quote }}
+  SEASONS_AUTO_FINALIZE: {{ .Values.env.seasonsAutoFinalize | quote }}
+  RATE_LIMIT_PER_MINUTE: {{ .Values.env.rateLimitPerMinute | quote }}
+  # ЕСИА (демо через мок). authorize — публичный (браузер редиректится туда);
+  # token/userinfo — внутренний сервис (server-to-server).
+  ESIA_CLIENT_ID: {{ .Values.env.esiaClientId | quote }}
+  ESIA_REDIRECT_URI: "https://{{ .Values.domains.app }}/auth/esia/callback"
+  ESIA_AUTHORIZATION_ENDPOINT: "https://{{ .Values.domains.esia }}/authorize"
+  ESIA_TOKEN_ENDPOINT: "http://veraks-mock-esia:9000/token"
+  ESIA_USERINFO_ENDPOINT: "http://veraks-mock-esia:9000/userinfo"
+  ESIA_REQUIRE_CONFIRMED: {{ .Values.env.esiaRequireConfirmed | quote }}
+  # Реал-тайм уведомления: бэкенд пушит на внутренний адрес goctopus.
+  GOCTOPUS_URL: "http://veraks-goctopus:7890"
+  GOCTOPUS_USER: {{ .Values.env.goctopusUser | quote }}

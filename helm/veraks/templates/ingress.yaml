@@ -1,0 +1,62 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: veraks
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    # WebSocket (goctopus) и долгоживущие соединения.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    {{- if .Values.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.tls.clusterIssuer }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.tls.sslRedirect | quote }}
+    {{- end }}
+spec:
+  {{- if .Values.tls.enabled }}
+  tls:
+    - hosts: ["{{ .Values.domains.app }}"]
+      secretName: veraks-tls
+    - hosts: ["{{ .Values.domains.api }}"]
+      secretName: veraks-api-tls
+    - hosts: ["{{ .Values.domains.esia }}"]
+      secretName: veraks-esia-tls
+  {{- end }}
+  rules:
+    # Фронтенд + WebSocket-релей.
+    - host: {{ .Values.domains.app }}
+      http:
+        paths:
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: veraks-goctopus
+                port: { number: 7890 }
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: veraks-frontend
+                port: { number: 3000 }
+    # API-бэкенд (отдельный сабдомен; cookie шарится через domain=.veraks.ru).
+    - host: {{ .Values.domains.api }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: veraks-backend
+                port: { number: 8000 }
+    # Мок-«Госуслуги» (публичный /authorize, куда редиректится браузер).
+    - host: {{ .Values.domains.esia }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: veraks-mock-esia
+                port: { number: 9000 }
+{{- end }}

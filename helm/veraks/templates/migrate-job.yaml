@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: veraks-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "veraks.labels" . | nindent 4 }}
+  annotations:
+    # Прогоняется ПЕРЕД деплоем приложения (миграции до старта бэкенда/воркера).
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  # Дать Postgres подняться, если он ещё не готов.
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        {{- include "veraks.labels" . | nindent 8 }}
+        veraks/component: migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          # Ждём Postgres, применяем миграции; на первом деплое (seed.enabled)
+          # дополнительно засеваем демо-данные (seed.py делает TRUNCATE — на
+          # апгрейдах НЕ включать, иначе сотрёт данные).
+          command:
+            - sh
+            - -c
+            - |
+              until python -c "import asyncio,asyncpg,os,urllib.parse as u; \
+                p=u.urlparse(os.environ['DATABASE_URL'].replace('+asyncpg','')); \
+                asyncio.run(asyncpg.connect(host=p.hostname,port=p.port or 5432,user=p.username,password=p.password,database=p.path[1:]))" 2>/dev/null; do
+                echo "ожидаю Postgres..."; sleep 2;
+              done
+              alembic upgrade head
+              {{- if .Values.seed.enabled }}
+              python seed.py
+              {{- end }}
+          envFrom:
+            - configMapRef:
+                name: veraks-config
+            - secretRef:
+                name: veraks-secrets

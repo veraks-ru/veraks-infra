@@ -1,0 +1,116 @@
+# Значения по умолчанию для демо-контура «Веракс».
+# Секреты (пароли, ключи) НЕ хранятся здесь — прокидываются через --set из
+# GitHub Actions (secrets.*). Здесь только несекретные дефолты и структура.
+
+images:
+  # Собираются GitHub Actions и пушатся в Docker Hub; тег переопределяется деплоем.
+  backend:
+    repository: avvolob/veraks
+    tag: latest
+  frontend:
+    repository: avvolob/veraks-web
+    tag: latest
+  # Мок-ЕСИА (dev/mock-esia) — отдельный лёгкий образ для демо.
+  mockEsia:
+    repository: avvolob/veraks-mock-esia
+    tag: latest
+  postgres:
+    repository: postgres
+    tag: "15"
+  redis:
+    repository: redis
+    tag: "7"
+  goctopus:
+    repository: avvolob/goctopus
+    tag: latest
+
+imagePullPolicy: IfNotPresent
+
+# Домены. veraks.ru — фронт, api.veraks.ru — бэкенд, esia.veraks.ru — мок-ЕСИА.
+domains:
+  app: veraks.ru
+  api: api.veraks.ru
+  esia: esia.veraks.ru
+
+ingress:
+  enabled: true
+  className: nginx
+
+tls:
+  enabled: true
+  # ClusterIssuer `letsencrypt` уже создан aerolist-чартом (cluster-scoped) —
+  # НЕ пересоздаём, только ссылаемся аннотацией на Ingress.
+  clusterIssuer: letsencrypt
+  sslRedirect: true
+
+# Несекретное окружение приложения.
+env:
+  # Не local: cookie Secure и rate limiting включены; вебхук-секреты обязательны
+  # (для мок-демо задаются фиктивными непустыми значениями через секрет).
+  appEnv: demo
+  # Локальное демо-окно оспаривания = 0ч: в админке «Разрешить → Посчитать»
+  # срабатывает сразу (удобно показывать полный цикл).
+  disputeWindowHours: "0"
+  seasonsAutoFinalize: "true"
+  rateLimitPerMinute: "300"
+  cookieDomain: ".veraks.ru"
+  esiaClientId: veraks-demo
+  esiaRequireConfirmed: "true"
+  goctopusUser: veraks
+
+# Секреты — ЗАГЛУШКИ. В деплое переопределяются через --set из GitHub Secrets.
+# Для мок-демо реальные ЕСИА/платёжные ключи не нужны, но вебхук-секреты должны
+# быть непустыми (валидатор конфига требует их вне env=local).
+secrets:
+  snilsHmacKey: ""            # >= 32 байт
+  fieldEncryptionKey: ""      # Fernet key (base64 urlsafe 32 байта)
+  jwtSecret: ""               # >= 32 байт
+  postgresPassword: ""
+  webhookPaymentSecret: ""    # непустой (демо — любой)
+  webhookPayoutSecret: ""     # непустой (демо — любой)
+  goctopusPassword: ""
+
+# Первичное наполнение демо-данными (seed.py). Включать ТОЛЬКО на первом деплое
+# (seed делает TRUNCATE — на апгрейдах сбросил бы данные). По умолчанию выкл.
+seed:
+  enabled: false
+
+postgres:
+  storage: 5Gi
+  # storageClassName: "" # по умолчанию кластера
+  resources:
+    requests: { cpu: "100m", memory: "256Mi" }
+    limits: { cpu: "1", memory: "512Mi" }
+
+redis:
+  resources:
+    requests: { cpu: "50m", memory: "64Mi" }
+    limits: { cpu: "250m", memory: "128Mi" }
+
+backend:
+  replicas: 1
+  resources:
+    requests: { cpu: "100m", memory: "256Mi" }
+    limits: { cpu: "1", memory: "512Mi" }
+
+worker:
+  replicas: 1
+  resources:
+    requests: { cpu: "50m", memory: "192Mi" }
+    limits: { cpu: "500m", memory: "384Mi" }
+
+frontend:
+  replicas: 1
+  resources:
+    requests: { cpu: "50m", memory: "128Mi" }
+    limits: { cpu: "500m", memory: "256Mi" }
+
+goctopus:
+  resources:
+    requests: { cpu: "50m", memory: "64Mi" }
+    limits: { cpu: "250m", memory: "128Mi" }
+
+mockEsia:
+  resources:
+    requests: { cpu: "25m", memory: "64Mi" }
+    limits: { cpu: "250m", memory: "128Mi" }

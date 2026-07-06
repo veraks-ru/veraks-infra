@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: veraks-worker
+  labels:
+    {{- include "veraks.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: veraks
+      veraks/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: veraks
+        veraks/component: worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          # ARQ-воркер: фоновый скоринг, roll сезонов, закрытие окон, сверка леджера.
+          command: ["arq", "app.worker.WorkerSettings"]
+          envFrom:
+            - configMapRef:
+                name: veraks-config
+            - secretRef:
+                name: veraks-secrets
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}

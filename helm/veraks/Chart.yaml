@@ -1,0 +1,10 @@
+apiVersion: v2
+name: veraks
+description: >-
+  Платформа «Веракс» (биржа репутации предсказателей) — FastAPI-бэкенд, ARQ-воркер,
+  Next.js-фронтенд, Postgres, Redis, goctopus (WS-релей) и мок-ЕСИА для демо.
+  Разворачивается в общий Timeweb-кластер (тот же, что aerolist): cert-manager
+  выпускает Let's Encrypt по HTTP-01, ingress-nginx отдаёт TLS, один LB на все домены.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
