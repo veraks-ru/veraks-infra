@@ -58,6 +58,13 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+      {{- if not .Values.postgres.persistence }}
+      # Демо: эфемерный том (без StorageClass/PV). Данные живут, пока жив под.
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.postgres.persistence }}
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -69,3 +76,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.postgres.storage }}
+  {{- end }}
