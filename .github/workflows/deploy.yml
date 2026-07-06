@@ -50,3 +50,13 @@ jobs:
             --set secrets.webhookPayoutSecret="${{ secrets.VERAKS_WEBHOOK_PAYOUT_SECRET }}" \
             --set secrets.goctopusPassword="${{ secrets.VERAKS_GOCTOPUS_PASSWORD }}" \
             --wait --timeout 8m
+
+      - name: Перекат приложений на свежий :latest
+        # helm upgrade не перезапускает Deployment, если шаблон не изменился,
+        # поэтому новая сборка того же тега :latest иначе не подхватывается.
+        # Форсируем перекат приложений — imagePullPolicy: Always даёт свежий pull.
+        # Postgres/Redis (StatefulSet/пиновые теги) не трогаем.
+        run: |
+          apps="backend worker frontend goctopus mock-esia"
+          for d in $apps; do kubectl -n veraks rollout restart deploy/veraks-$d; done
+          for d in $apps; do kubectl -n veraks rollout status deploy/veraks-$d --timeout=5m; done
