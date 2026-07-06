@@ -1,0 +1,36 @@
+{{- if .Values.seed.enabled }}
+# Первичное наполнение демо-данными. POST-install/upgrade хук: к этому моменту
+# обычные ресурсы (Secret/ConfigMap) уже созданы, а схема БД мигрирована
+# initContainer'ом бэкенда (helm --wait дождался готовности бэкенда). seed.py
+# делает TRUNCATE — поэтому включается только на первом деплое (seed.enabled).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: veraks-seed-{{ .Release.Revision }}
+  labels:
+    {{- include "veraks.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        {{- include "veraks.labels" . | nindent 8 }}
+        veraks/component: seed
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: ["python", "seed.py"]
+          envFrom:
+            - configMapRef:
+                name: veraks-config
+            - secretRef:
+                name: veraks-secrets
+{{- end }}

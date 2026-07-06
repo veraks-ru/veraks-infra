@@ -16,6 +16,23 @@ spec:
         app.kubernetes.io/name: veraks
         veraks/component: worker
     spec:
+      initContainers:
+        # Ждём Postgres (миграции применит бэкенд); стартуем воркер после БД.
+        - name: wait-db
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              until python -c "import asyncio,asyncpg,os,urllib.parse as u; \
+                p=u.urlparse(os.environ['DATABASE_URL'].replace('+asyncpg','')); \
+                asyncio.run(asyncpg.connect(host=p.hostname,port=p.port or 5432,user=p.username,password=p.password,database=p.path[1:]))" 2>/dev/null; do
+                echo "ожидаю Postgres..."; sleep 2;
+              done
+          envFrom:
+            - secretRef:
+                name: veraks-secrets
       containers:
         - name: worker
           image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
