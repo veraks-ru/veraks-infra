@@ -76,13 +76,12 @@ seed:
   enabled: false
 
 postgres:
-  # Демо: эфемерное хранилище (emptyDir) — не требует StorageClass/PV в кластере.
-  # Данные не переживают пересоздание пода Postgres; seed заполняет БД заново.
-  # Для долговечной БД: поставить провижнер (напр. local-path), задать
-  # storageClassName и persistence: true (том переживёт перезапуски).
-  persistence: false
+  # Долговечное хранилище: PVC от local-path-provisioner (hostPath на ноде,
+  # /opt/local-path-provisioner) — данные переживают перезапуски пода и ноды.
+  # Демо без провижнера: persistence: false → эфемерный emptyDir (seed заполнит БД).
+  persistence: true
   storage: 5Gi
-  storageClassName: "" # используется только при persistence: true
+  storageClassName: "local-path"
   resources:
     requests: { cpu: "100m", memory: "256Mi" }
     limits: { cpu: "1", memory: "512Mi" }
