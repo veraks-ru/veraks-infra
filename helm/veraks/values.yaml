@@ -24,7 +24,9 @@ images:
     repository: avvolob/goctopus
     tag: latest
 
-imagePullPolicy: IfNotPresent
+# Образы приложений с тегом :latest — тянем всегда, иначе нода кэширует старый
+# слой под тем же тегом и деплой не подхватывает новую сборку (грабли :latest).
+imagePullPolicy: Always
 
 # Домены. veraks.ru — фронт, api.veraks.ru — бэкенд, esia.veraks.ru — мок-ЕСИА.
 domains:
