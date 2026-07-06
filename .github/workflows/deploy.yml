@@ -1,0 +1,52 @@
+name: Deploy veraks
+
+# Ручной деплой (кнопка «Run workflow»). Опция seed — засеять демо-данные
+# (только на первом деплое; seed.py делает TRUNCATE).
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Засеять демо-данные (seed.py) — ТОЛЬКО первый деплой"
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Namespace + image pull secret
+        run: |
+          kubectl create namespace veraks --dry-run=client -o yaml | kubectl apply -f -
+          # Секрет доступа к Docker Hub (avvolob/* — приватные репозитории) и
+          # привязка к default-ServiceAccount неймспейса: все поды тянут образы
+          # автоматически, без правки чарта.
+          kubectl -n veraks create secret docker-registry veraks-regcred \
+            --docker-username="${{ secrets.DOCKERHUB_USERNAME }}" \
+            --docker-password="${{ secrets.DOCKERHUB_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n veraks patch serviceaccount default \
+            -p '{"imagePullSecrets":[{"name":"veraks-regcred"}]}'
+
+      - uses: azure/setup-helm@v4
+
+      - name: helm upgrade --install
+        run: |
+          helm upgrade --install veraks ./helm/veraks \
+            --namespace veraks \
+            --set seed.enabled=${{ inputs.seed }} \
+            --set secrets.snilsHmacKey="${{ secrets.VERAKS_SNILS_HMAC_KEY }}" \
+            --set secrets.fieldEncryptionKey="${{ secrets.VERAKS_FIELD_ENCRYPTION_KEY }}" \
+            --set secrets.jwtSecret="${{ secrets.VERAKS_JWT_SECRET }}" \
+            --set secrets.postgresPassword="${{ secrets.VERAKS_POSTGRES_PASSWORD }}" \
+            --set secrets.webhookPaymentSecret="${{ secrets.VERAKS_WEBHOOK_PAYMENT_SECRET }}" \
+            --set secrets.webhookPayoutSecret="${{ secrets.VERAKS_WEBHOOK_PAYOUT_SECRET }}" \
+            --set secrets.goctopusPassword="${{ secrets.VERAKS_GOCTOPUS_PASSWORD }}" \
+            --wait --timeout 8m
