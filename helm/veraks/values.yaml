@@ -59,6 +59,10 @@ env:
   esiaClientId: veraks-demo
   esiaRequireConfirmed: "true"
   goctopusUser: veraks
+  # Эквайринг ТБанк включён на демо. E-mail для чека 54-ФЗ — временный (ЕСИА
+  # почту не даёт; в проде собирать у пользователя).
+  tbankEnabled: "true"
+  tbankReceiptEmail: avvolob@gmail.com
 
 # Секреты — ЗАГЛУШКИ. В деплое переопределяются через --set из GitHub Secrets.
 # Для мок-демо реальные ЕСИА/платёжные ключи не нужны, но вебхук-секреты должны
@@ -71,6 +75,8 @@ secrets:
   webhookPaymentSecret: ""    # непустой (демо — любой)
   webhookPayoutSecret: ""     # непустой (демо — любой)
   goctopusPassword: ""
+  tbankTerminalKey: ""        # эквайринг ТБанк (тестовый DEMO-терминал)
+  tbankPassword: ""           # пароль терминала ТБанк
 
 # Первичное наполнение демо-данными (seed.py). Включать ТОЛЬКО на первом деплое
 # (seed делает TRUNCATE — на апгрейдах сбросил бы данные). По умолчанию выкл.

@@ -49,6 +49,8 @@ jobs:
             --set secrets.webhookPaymentSecret="${{ secrets.VERAKS_WEBHOOK_PAYMENT_SECRET }}" \
             --set secrets.webhookPayoutSecret="${{ secrets.VERAKS_WEBHOOK_PAYOUT_SECRET }}" \
             --set secrets.goctopusPassword="${{ secrets.VERAKS_GOCTOPUS_PASSWORD }}" \
+            --set secrets.tbankTerminalKey="${{ secrets.VERAKS_TBANK_TERMINAL_KEY }}" \
+            --set secrets.tbankPassword="${{ secrets.VERAKS_TBANK_PASSWORD }}" \
             --wait --timeout 8m
 
       - name: Перекат приложений на свежий :latest

@@ -28,3 +28,11 @@ data:
   # Реал-тайм уведомления: бэкенд пушит на внутренний адрес goctopus.
   GOCTOPUS_URL: "http://veraks-goctopus:7890"
   GOCTOPUS_USER: {{ .Values.env.goctopusUser | quote }}
+  # Эквайринг ТБанк (приём платежей за подписку). Terminal Key/пароль — в секрете.
+  TBANK_ENABLED: {{ .Values.env.tbankEnabled | quote }}
+  TBANK_API_BASE_URL: "https://securepay.tinkoff.ru/v2"
+  TBANK_TAXATION: "usn_income"
+  TBANK_RECEIPT_EMAIL: {{ .Values.env.tbankReceiptEmail | quote }}
+  # Публичные базы: SuccessURL/FailURL (фронт) и NotificationURL вебхука (api).
+  PUBLIC_WEB_BASE: "https://{{ .Values.domains.app }}"
+  PUBLIC_API_BASE: "https://{{ .Values.domains.api }}"
