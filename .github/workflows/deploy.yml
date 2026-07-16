@@ -51,6 +51,7 @@ jobs:
             --set secrets.goctopusPassword="${{ secrets.VERAKS_GOCTOPUS_PASSWORD }}" \
             --set secrets.tbankTerminalKey="${{ secrets.VERAKS_TBANK_TERMINAL_KEY }}" \
             --set secrets.tbankPassword="${{ secrets.VERAKS_TBANK_PASSWORD }}" \
+            --set secrets.jumpApiKey="${{ secrets.VERAKS_JUMP_API_KEY }}" \
             --wait --timeout 8m
 
       - name: Перекат приложений на свежий :latest

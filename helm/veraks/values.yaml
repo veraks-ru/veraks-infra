@@ -63,6 +63,13 @@ env:
   # почту не даёт; в проде собирать у пользователя).
   tbankEnabled: "true"
   tbankReceiptEmail: avvolob@gmail.com
+  # Выплаты Jump.Finance (призовой фонд, СБП). ВНИМАНИЕ: при enabled=true
+  # валидатор конфига требует непустой JUMP_API_KEY (секрет VERAKS_JUMP_API_KEY
+  # в GitHub) — без него поды не поднимутся (fail-closed).
+  jumpEnabled: "true"
+  # id юрлица и счёта в Jump (GET /banks_accounts) — несекретные.
+  jumpAgentId: "28035"
+  jumpBankAccountId: "43691"
 
 # Секреты — ЗАГЛУШКИ. В деплое переопределяются через --set из GitHub Secrets.
 # Для мок-демо реальные ЕСИА/платёжные ключи не нужны, но вебхук-секреты должны
@@ -77,6 +84,7 @@ secrets:
   goctopusPassword: ""
   tbankTerminalKey: ""        # эквайринг ТБанк (тестовый DEMO-терминал)
   tbankPassword: ""           # пароль терминала ТБанк
+  jumpApiKey: ""              # Client-Key выплат Jump.Finance (из ЛК Jump)
 
 # Первичное наполнение демо-данными (seed.py). Включать ТОЛЬКО на первом деплое
 # (seed делает TRUNCATE — на апгрейдах сбросил бы данные). По умолчанию выкл.

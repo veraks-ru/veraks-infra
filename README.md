@@ -35,6 +35,9 @@ Settings организации → Secrets and variables → Actions → New or
 | `VERAKS_WEBHOOK_PAYMENT_SECRET` | `openssl rand -hex 16` (любой непустой) |
 | `VERAKS_WEBHOOK_PAYOUT_SECRET` | `openssl rand -hex 16` |
 | `VERAKS_GOCTOPUS_PASSWORD` | `openssl rand -hex 16` |
+| `VERAKS_TBANK_TERMINAL_KEY` | Terminal Key из кабинета ТБанк (эквайринг) |
+| `VERAKS_TBANK_PASSWORD` | пароль терминала ТБанк |
+| `VERAKS_JUMP_API_KEY` | Client-Key из ЛК Jump.Finance (Настройки → Интеграции → OpenAPI; показывается один раз) |
 
 > Приватные `avvolob/veraks*` тянутся из кластера через `veraks-regcred` — его
 > создаёт деплой-workflow из `DOCKERHUB_*` и привязывает к default-SA неймспейса.

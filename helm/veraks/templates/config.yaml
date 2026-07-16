@@ -33,6 +33,11 @@ data:
   TBANK_API_BASE_URL: "https://securepay.tinkoff.ru/v2"
   TBANK_TAXATION: "usn_income"
   TBANK_RECEIPT_EMAIL: {{ .Values.env.tbankReceiptEmail | quote }}
+  # Выплаты Jump.Finance (призовой фонд, СБП по телефону). Ключ — в секрете.
+  JUMP_ENABLED: {{ .Values.env.jumpEnabled | quote }}
+  JUMP_API_BASE_URL: "https://api.jump.finance/services/openapi"
+  JUMP_AGENT_ID: {{ .Values.env.jumpAgentId | quote }}
+  JUMP_BANK_ACCOUNT_ID: {{ .Values.env.jumpBankAccountId | quote }}
   # Публичные базы: SuccessURL/FailURL (фронт) и NotificationURL вебхука (api).
   PUBLIC_WEB_BASE: "https://{{ .Values.domains.app }}"
   PUBLIC_API_BASE: "https://{{ .Values.domains.api }}"
