@@ -33,10 +33,16 @@ spec:
       containers:
         - name: frontend
           # Публичные URL (NEXT_PUBLIC_API_BASE / NEXT_PUBLIC_GOCTOPUS_URL) вшиты в
-          # бандл на этапе сборки образа (build-args в GitHub Actions) — рантайм-env
-          # фронту не нужен.
+          # бандл на этапе сборки образа (build-args в GitHub Actions).
           image: "{{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            # metadataBase Next.js: база для абсолютных ссылок на OG-картинки
+            # событий. Читается только сервером, поэтому задаётся в рантайме —
+            # домен меняется без пересборки образа. Без неё краулерам уедет
+            # og:image на http://localhost:3000.
+            - name: SITE_URL
+              value: "https://{{ .Values.domains.app }}"
           ports:
             - containerPort: 3000
           readinessProbe:
