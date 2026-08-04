@@ -59,6 +59,11 @@ env:
   esiaClientId: veraks-demo
   esiaRequireConfirmed: "true"
   goctopusUser: veraks
+  # Явный выбор платёжных провайдеров (fail-fast, см. app/config.py Settings):
+  # демо использует эквайринг ТБанк и выплаты Jump.Finance (T8 — раньше не
+  # были заданы явно в чарте, хотя tbankEnabled/jumpEnabled уже были включены).
+  billingCheckoutProvider: tbank
+  billingPayoutProvider: jump
   # Эквайринг ТБанк включён на демо. E-mail для чека 54-ФЗ — временный (ЕСИА
   # почту не даёт; в проде собирать у пользователя).
   tbankEnabled: "true"
@@ -79,8 +84,10 @@ secrets:
   fieldEncryptionKey: ""      # Fernet key (base64 urlsafe 32 байта)
   jwtSecret: ""               # >= 32 байт
   postgresPassword: ""
-  webhookPaymentSecret: ""    # непустой (демо — любой)
-  webhookPayoutSecret: ""     # непустой (демо — любой)
+  # T9: пароль непривилегированной роли приложения orakul_app (рантайм
+  # backend/worker; владелец veraks — только для миграций, см. backend.yaml
+  # initContainer'ы bootstrap-app-role/migrate и backend/README.md).
+  appDbPassword: ""
   goctopusPassword: ""
   tbankTerminalKey: ""        # эквайринг ТБанк (тестовый DEMO-терминал)
   tbankPassword: ""           # пароль терминала ТБанк

@@ -31,9 +31,13 @@ spec:
         veraks/component: backend
     spec:
       initContainers:
-        # Ждём Postgres и применяем миграции ДО старта бэкенда. Конфиг доступен
-        # (Secret/ConfigMap — обычные ресурсы релиза). Идемпотентно (1 реплика).
-        - name: migrate
+        # T9: роль приложения orakul_app должна существовать ДО миграций —
+        # иначе REVOKE UPDATE/DELETE на append-only из 0011/0029 будет no-op
+        # (роль появится позже, но задним числом привилегии не подтянутся).
+        # Владелец схемы (MIGRATIONS_DATABASE_URL) — единственный, кто может
+        # GRANT/REVOKE/ALTER DEFAULT PRIVILEGES. Идемпотентно, безопасно на
+        # каждом старте (1 реплика).
+        - name: bootstrap-app-role-pre
           image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command:
@@ -45,10 +49,48 @@ spec:
                 asyncio.run(asyncpg.connect(host=p.hostname,port=p.port or 5432,user=p.username,password=p.password,database=p.path[1:]))" 2>/dev/null; do
                 echo "ожидаю Postgres..."; sleep 2;
               done
-              alembic upgrade head
+              python scripts/create_app_role.py
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: veraks-secrets
+                  key: MIGRATIONS_DATABASE_URL
+          envFrom:
+            - secretRef:
+                name: veraks-secrets
+        # Применяем миграции владельцем схемы ДО старта бэкенда (сам бэкенд
+        # ходит непривилегированной ролью — DATABASE_URL из envFrom ниже).
+        - name: migrate
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: veraks-secrets
+                  key: MIGRATIONS_DATABASE_URL
           envFrom:
             - configMapRef:
                 name: veraks-config
+            - secretRef:
+                name: veraks-secrets
+        # Перевыдаём гранты ПОСЛЕ миграций: свежесозданные владельцем таблицы
+        # уже получили CRUD через ALTER DEFAULT PRIVILEGES (см. create_app_role.py
+        # шаг 5), но актуальный список append-only здесь — источник истины;
+        # перезапуск нужен, если он расширился со времени последнего деплоя.
+        - name: bootstrap-app-role-post
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: ["python", "scripts/create_app_role.py"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: veraks-secrets
+                  key: MIGRATIONS_DATABASE_URL
+          envFrom:
             - secretRef:
                 name: veraks-secrets
       containers:

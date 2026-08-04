@@ -28,6 +28,10 @@ data:
   # Реал-тайм уведомления: бэкенд пушит на внутренний адрес goctopus.
   GOCTOPUS_URL: "http://veraks-goctopus:7890"
   GOCTOPUS_USER: {{ .Values.env.goctopusUser | quote }}
+  # Явный выбор платёжных провайдеров (T8 — раньше не были заданы явно,
+  # хотя tbank/jump ниже уже были включены; см. app/config.py fail-fast).
+  BILLING_CHECKOUT_PROVIDER: {{ .Values.env.billingCheckoutProvider | quote }}
+  BILLING_PAYOUT_PROVIDER: {{ .Values.env.billingPayoutProvider | quote }}
   # Эквайринг ТБанк (приём платежей за подписку). Terminal Key/пароль — в секрете.
   TBANK_ENABLED: {{ .Values.env.tbankEnabled | quote }}
   TBANK_API_BASE_URL: "https://securepay.tinkoff.ru/v2"

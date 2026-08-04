@@ -17,7 +17,10 @@ spec:
         veraks/component: worker
     spec:
       initContainers:
-        # Ждём Postgres (миграции применит бэкенд); стартуем воркер после БД.
+        # Ждём Postgres (миграции и роль orakul_app применит бэкенд —
+        # backend.yaml initContainers bootstrap-app-role-pre/migrate); DATABASE_URL
+        # здесь уже роль приложения (envFrom), поэтому цикл заодно ждёт, пока
+        # она появится — до этого подключение будет падать по auth, это ок.
         - name: wait-db
           image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
