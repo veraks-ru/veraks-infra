@@ -17,6 +17,14 @@ data:
   RESOLUTIONS_DISPUTE_WINDOW_HOURS: {{ .Values.env.disputeWindowHours | quote }}
   SEASONS_AUTO_FINALIZE: {{ .Values.env.seasonsAutoFinalize | quote }}
   RATE_LIMIT_PER_MINUTE: {{ .Values.env.rateLimitPerMinute | quote }}
+  # Отдельный жёсткий лимит на /auth/* (брутфорс state/токенов), fail-closed.
+  RATE_LIMIT_AUTH_PER_MINUTE: {{ .Values.env.rateLimitAuthPerMinute | quote }}
+  # Версии обязательных документов (оферта, согласие на ПДн). Меняет юрист —
+  # helm upgrade --set env.consentsOfferVersion=..., без пересборки образа:
+  # у принявших старую версию сразу появляется недостающее согласие, а
+  # участие в конкурсе блокируется до переподтверждения (152-ФЗ, PRD §7).
+  CONSENTS_OFFER_VERSION: {{ .Values.env.consentsOfferVersion | quote }}
+  CONSENTS_PDN_VERSION: {{ .Values.env.consentsPdnVersion | quote }}
   # ЕСИА (демо через мок). authorize — публичный (браузер редиректится туда);
   # token/userinfo — внутренний сервис (server-to-server).
   ESIA_CLIENT_ID: {{ .Values.env.esiaClientId | quote }}

@@ -55,6 +55,12 @@ env:
   disputeWindowHours: "0"
   seasonsAutoFinalize: "true"
   rateLimitPerMinute: "300"
+  # Ужесточённый лимит на /auth/* (см. app/middleware/rate_limit.py).
+  rateLimitAuthPerMinute: "20"
+  # Текущие версии юридических документов (дата редакции текста на /legal).
+  # Оператор/юрист меняет их через --set, не пересобирая образ.
+  consentsOfferVersion: "2026-07-05"
+  consentsPdnVersion: "2026-07-05"
   cookieDomain: ".veraks.ru"
   esiaClientId: veraks-demo
   esiaRequireConfirmed: "true"
