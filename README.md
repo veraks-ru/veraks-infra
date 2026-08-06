@@ -32,8 +32,7 @@ Settings организации → Secrets and variables → Actions → New or
 | `VERAKS_JWT_SECRET` | `openssl rand -hex 32` |
 | `VERAKS_FIELD_ENCRYPTION_KEY` | `python -c "from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())"` |
 | `VERAKS_POSTGRES_PASSWORD` | `openssl rand -base64 24` |
-| `VERAKS_WEBHOOK_PAYMENT_SECRET` | `openssl rand -hex 16` (любой непустой) |
-| `VERAKS_WEBHOOK_PAYOUT_SECRET` | `openssl rand -hex 16` |
+| `VERAKS_APP_DB_PASSWORD` | `openssl rand -base64 24` — пароль непривилегированной роли `orakul_app` (T9, обязателен: без него `create_app_role.py` падает `SystemExit` и initContainer'ы бэкенда не поднимутся) |
 | `VERAKS_GOCTOPUS_PASSWORD` | `openssl rand -hex 16` |
 | `VERAKS_TBANK_TERMINAL_KEY` | Terminal Key из кабинета ТБанк (эквайринг) |
 | `VERAKS_TBANK_PASSWORD` | пароль терминала ТБанк |

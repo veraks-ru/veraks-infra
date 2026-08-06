@@ -46,8 +46,7 @@ jobs:
             --set secrets.fieldEncryptionKey="${{ secrets.VERAKS_FIELD_ENCRYPTION_KEY }}" \
             --set secrets.jwtSecret="${{ secrets.VERAKS_JWT_SECRET }}" \
             --set secrets.postgresPassword="${{ secrets.VERAKS_POSTGRES_PASSWORD }}" \
-            --set secrets.webhookPaymentSecret="${{ secrets.VERAKS_WEBHOOK_PAYMENT_SECRET }}" \
-            --set secrets.webhookPayoutSecret="${{ secrets.VERAKS_WEBHOOK_PAYOUT_SECRET }}" \
+            --set secrets.appDbPassword="${{ secrets.VERAKS_APP_DB_PASSWORD }}" \
             --set secrets.goctopusPassword="${{ secrets.VERAKS_GOCTOPUS_PASSWORD }}" \
             --set secrets.tbankTerminalKey="${{ secrets.VERAKS_TBANK_TERMINAL_KEY }}" \
             --set secrets.tbankPassword="${{ secrets.VERAKS_TBANK_PASSWORD }}" \
