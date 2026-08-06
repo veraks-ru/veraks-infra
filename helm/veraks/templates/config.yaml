@@ -25,6 +25,12 @@ data:
   ESIA_TOKEN_ENDPOINT: "http://veraks-mock-esia:9000/token"
   ESIA_USERINFO_ENDPOINT: "http://veraks-mock-esia:9000/userinfo"
   ESIA_REQUIRE_CONFIRMED: {{ .Values.env.esiaRequireConfirmed | quote }}
+  # Проверка id_token (подпись по JWKS + iss/aud/exp/nonce). Вне APP_ENV=local
+  # обе переменные обязательны — пустой ESIA_JWKS_URL валит старт бэкенда.
+  # ISSUER — строка внутри маркера (совпадает с MOCK_ESIA_ISSUER мока),
+  # JWKS_URL — внутренний адрес сервиса (server-to-server).
+  ESIA_ISSUER: "https://{{ .Values.domains.esia }}"
+  ESIA_JWKS_URL: "http://veraks-mock-esia:9000/jwks"
   # Реал-тайм уведомления: бэкенд пушит на внутренний адрес goctopus.
   GOCTOPUS_URL: "http://veraks-goctopus:7890"
   GOCTOPUS_USER: {{ .Values.env.goctopusUser | quote }}

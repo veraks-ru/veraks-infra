@@ -38,5 +38,10 @@ spec:
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - containerPort: 9000
+          env:
+            # ``iss`` подписанного id_token: ровно то же значение, что в
+            # ESIA_ISSUER бэкенда (см. templates/config.yaml).
+            - name: MOCK_ESIA_ISSUER
+              value: "https://{{ .Values.domains.esia }}"
           resources:
             {{- toYaml .Values.mockEsia.resources | nindent 12 }}
