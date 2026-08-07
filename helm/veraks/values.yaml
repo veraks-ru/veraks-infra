@@ -65,6 +65,22 @@ env:
   esiaClientId: veraks-demo
   esiaRequireConfirmed: "true"
   goctopusUser: veraks
+  # Провайдеры входа (см. AuthSettings.providers в app/config.py). Сейчас
+  # только email — договор с интегратором ЕСИА ещё не заключён; код и мок
+  # ЕСИА остаются в чарте (см. mock-esia.yaml), включаются обратно значением
+  # "email,esia".
+  authProviders: "email"
+  # Почта: magic-link вход по email (порт EmailSender, backend/identity).
+  # ВНИМАНИЕ: вне APP_ENV=local бэкенд не поднимется без настроенного SMTP
+  # (fail-fast по образцу billing-провайдеров) — mailHost ниже нужно заполнить
+  # реальным значением перед деплоем, плейсхолдер "" не пройдёт валидацию.
+  mailHost: ""                 # хост боевого SMTP-провайдера
+  mailPort: "587"
+  mailUsername: ""             # логин SMTP, если провайдер требует авторизацию
+  mailFromAddress: "noreply@veraks.ru"
+  mailFromName: "Веракс"
+  mailUseTls: "false"          # неявный TLS (обычно порт 465)
+  mailUseStarttls: "true"      # STARTTLS (обычно порт 587) — типовая связка для боевого SMTP
   # Явный выбор платёжных провайдеров (fail-fast, см. app/config.py Settings):
   # демо использует эквайринг ТБанк и выплаты Jump.Finance (T8 — раньше не
   # были заданы явно в чарте, хотя tbankEnabled/jumpEnabled уже были включены).
@@ -98,6 +114,7 @@ secrets:
   tbankTerminalKey: ""        # эквайринг ТБанк (тестовый DEMO-терминал)
   tbankPassword: ""           # пароль терминала ТБанк
   jumpApiKey: ""              # Client-Key выплат Jump.Finance (из ЛК Jump)
+  mailPassword: ""            # пароль SMTP (пусто, если провайдер работает без авторизации)
 
 # Первичное наполнение демо-данными (seed.py). Включать ТОЛЬКО на первом деплое
 # (seed делает TRUNCATE — на апгрейдах сбросил бы данные). По умолчанию выкл.

@@ -42,6 +42,19 @@ data:
   # Реал-тайм уведомления: бэкенд пушит на внутренний адрес goctopus.
   GOCTOPUS_URL: "http://veraks-goctopus:7890"
   GOCTOPUS_USER: {{ .Values.env.goctopusUser | quote }}
+  # Провайдеры входа: пока только email — ЕСИА выключена флагом (нет
+  # договора с интегратором), включается обратно значением "email,esia".
+  AUTH_PROVIDERS: {{ .Values.env.authProviders | quote }}
+  # Почта: magic-link вход по email. MAIL_LINK_BASE_URL выводится из домена
+  # фронта (ссылка в письме должна вести на витрину, а не на API) — не хардкодить.
+  MAIL_HOST: {{ .Values.env.mailHost | quote }}
+  MAIL_PORT: {{ .Values.env.mailPort | quote }}
+  MAIL_USERNAME: {{ .Values.env.mailUsername | quote }}
+  MAIL_FROM_ADDRESS: {{ .Values.env.mailFromAddress | quote }}
+  MAIL_FROM_NAME: {{ .Values.env.mailFromName | quote }}
+  MAIL_USE_TLS: {{ .Values.env.mailUseTls | quote }}
+  MAIL_USE_STARTTLS: {{ .Values.env.mailUseStarttls | quote }}
+  MAIL_LINK_BASE_URL: "https://{{ .Values.domains.app }}"
   # Явный выбор платёжных провайдеров (T8 — раньше не были заданы явно,
   # хотя tbank/jump ниже уже были включены; см. app/config.py fail-fast).
   BILLING_CHECKOUT_PROVIDER: {{ .Values.env.billingCheckoutProvider | quote }}

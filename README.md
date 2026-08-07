@@ -37,6 +37,7 @@ Settings организации → Secrets and variables → Actions → New or
 | `VERAKS_TBANK_TERMINAL_KEY` | Terminal Key из кабинета ТБанк (эквайринг) |
 | `VERAKS_TBANK_PASSWORD` | пароль терминала ТБанк |
 | `VERAKS_JUMP_API_KEY` | Client-Key из ЛК Jump.Finance (Настройки → Интеграции → OpenAPI; показывается один раз) |
+| `VERAKS_MAIL_PASSWORD` | пароль SMTP-провайдера (magic-link вход по email); **необязателен** — оставить пустым, если провайдер принимает письма без авторизации |
 
 > Приватные `avvolob/veraks*` тянутся из кластера через `veraks-regcred` — его
 > создаёт деплой-workflow из `DOCKERHUB_*` и привязывает к default-SA неймспейса.
@@ -80,6 +81,26 @@ Postgres — на **постоянном томе** (`postgres.persistence: true
 `twc_database_cluster` + ежедневный `twc_database_backup_schedule`): создать
 инстанс, вписать его `DATABASE_URL` в секрет и выключить in-cluster Postgres
 (`postgres.enabled: false` / убрать из чарта). Требует TWC-токена и платный.
+
+## Почта и провайдеры входа
+
+Договор с интегратором ЕСИА ещё не заключён, поэтому боевой вход сейчас —
+только email + одноразовая ссылка (magic link): `env.authProviders: "email"`
+в `values.yaml` (`AUTH_PROVIDERS` в ConfigMap). Мок ЕСИА (`mock-esia.yaml`,
+домен `esia.veraks.ru`) при этом **остаётся задеплоенным** — удалять чарт не
+нужно, он понадобится сразу, как только флаг вернут в `"email,esia"` при
+подключении боевой ЕСИА; на витрине при выключенном провайдере кнопка входа
+через ЕСИА просто скрыта.
+
+Письма отправляет реальный SMTP (в `values.yaml` — `env.mailHost` и соседние
+`env.mail*`, пароль — секрет `VERAKS_MAIL_PASSWORD` выше). **Важно:**
+`env.mailHost` по умолчанию — пустой плейсхолдер; вне `APP_ENV=local` бэкенд
+не поднимется без настроенного SMTP (fail-fast, тот же паттерн, что у
+платёжных провайдеров) — заполнить реальным SMTP-хостом провайдера через
+`--set env.mailHost=...` (или правкой `values.yaml`) **до** первого деплоя
+после этого изменения, иначе под бэкенда будет падать при старте.
+`MAIL_LINK_BASE_URL` в ConfigMap выводится из `domains.app`, отдельно
+настраивать не нужно.
 
 ## Проверка
 ```bash
