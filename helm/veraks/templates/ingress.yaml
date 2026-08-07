@@ -19,8 +19,10 @@ spec:
       secretName: veraks-tls
     - hosts: ["{{ .Values.domains.api }}"]
       secretName: veraks-api-tls
+    {{- if contains "esia" .Values.env.authProviders }}
     - hosts: ["{{ .Values.domains.esia }}"]
       secretName: veraks-esia-tls
+    {{- end }}
   {{- end }}
   rules:
     # Фронтенд + WebSocket-релей.
@@ -50,6 +52,10 @@ spec:
                 name: veraks-backend
                 port: { number: 8000 }
     # Мок-«Госуслуги» (публичный /authorize, куда редиректится браузер).
+    # Публикуется ТОЛЬКО когда провайдер esia включён: мок даёт войти любым
+    # «гражданином», включая демо-админов, поэтому при выключенной ЕСИА его
+    # нельзя оставлять доступным из интернета.
+    {{- if contains "esia" .Values.env.authProviders }}
     - host: {{ .Values.domains.esia }}
       http:
         paths:
@@ -59,4 +65,5 @@ spec:
               service:
                 name: veraks-mock-esia
                 port: { number: 9000 }
+    {{- end }}
 {{- end }}
