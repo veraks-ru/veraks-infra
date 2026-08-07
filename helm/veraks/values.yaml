@@ -79,13 +79,16 @@ env:
   # Заполнить mailHost/секрет пароля реальным SMTP можно в любой момент через
   # helm upgrade --set, без пересборки образа — тогда письма начнут уходить
   # по-настоящему.
-  mailHost: ""                 # хост боевого SMTP-провайдера; пусто — письма только в лог
-  mailPort: "587"
-  mailUsername: ""             # логин SMTP, если провайдер требует авторизацию
-  mailFromAddress: "noreply@veraks.ru"
+  # Яндекс 360: логинимся ящиком организации, а пишем от адреса-синонима на
+  # домене veraks.ru — поэтому mailUsername и mailFromAddress РАЗНЫЕ, это не
+  # опечатка. Порт 465 = неявный TLS, поэтому starttls выключен.
+  mailHost: "smtp.yandex.ru"
+  mailPort: "465"
+  mailUsername: "info@andreyvolobuev.ru"   # ящик, под которым авторизуемся
+  mailFromAddress: "info@veraks.ru"        # синоним, от чьего имени письма
   mailFromName: "Веракс"
-  mailUseTls: "false"          # неявный TLS (обычно порт 465)
-  mailUseStarttls: "true"      # STARTTLS (обычно порт 587) — типовая связка для боевого SMTP
+  mailUseTls: "true"           # неявный TLS (порт 465)
+  mailUseStarttls: "false"     # взаимоисключающе с mailUseTls
   # Явный выбор платёжных провайдеров (fail-fast, см. app/config.py Settings):
   # демо использует эквайринг ТБанк и выплаты Jump.Finance (T8 — раньше не
   # были заданы явно в чарте, хотя tbankEnabled/jumpEnabled уже были включены).
