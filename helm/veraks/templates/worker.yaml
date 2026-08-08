@@ -22,7 +22,7 @@ spec:
         # здесь уже роль приложения (envFrom), поэтому цикл заодно ждёт, пока
         # она появится — до этого подключение будет падать по auth, это ок.
         - name: wait-db
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command:
             - sh
@@ -38,7 +38,7 @@ spec:
                 name: veraks-secrets
       containers:
         - name: worker
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           # ARQ-воркер: фоновый скоринг, roll сезонов, закрытие окон, сверка леджера.
           command: ["arq", "app.worker.WorkerSettings"]

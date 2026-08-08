@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: goctopus
-          image: "{{ .Values.images.goctopus.repository }}:{{ .Values.images.goctopus.tag }}"
+          image: {{ include "veraks.image" .Values.images.goctopus }}
           env:
             - name: WS_HOST
               value: "0.0.0.0"

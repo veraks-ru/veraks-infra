@@ -34,7 +34,7 @@ spec:
         - name: mock-esia
           # Демо-мок «Госуслуг»: страница выбора учётной записи + token/userinfo.
           # Заменяется на реальный ЕСИА-шлюз при боевой интеграции (см. infra/README).
-          image: "{{ .Values.images.mockEsia.repository }}:{{ .Values.images.mockEsia.tag }}"
+          image: {{ include "veraks.image" .Values.images.mockEsia }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - containerPort: 9000

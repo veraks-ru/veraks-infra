@@ -38,7 +38,7 @@ spec:
         # GRANT/REVOKE/ALTER DEFAULT PRIVILEGES. Идемпотентно, безопасно на
         # каждом старте (1 реплика).
         - name: bootstrap-app-role-pre
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command:
             - sh
@@ -62,7 +62,7 @@ spec:
         # Применяем миграции владельцем схемы ДО старта бэкенда (сам бэкенд
         # ходит непривилегированной ролью — DATABASE_URL из envFrom ниже).
         - name: migrate
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["alembic", "upgrade", "head"]
           env:
@@ -81,7 +81,7 @@ spec:
         # шаг 5), но актуальный список append-only здесь — источник истины;
         # перезапуск нужен, если он расширился со времени последнего деплоя.
         - name: bootstrap-app-role-post
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["python", "scripts/create_app_role.py"]
           env:
@@ -95,7 +95,7 @@ spec:
                 name: veraks-secrets
       containers:
         - name: backend
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
           envFrom:

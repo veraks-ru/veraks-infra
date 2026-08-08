@@ -21,3 +21,20 @@ postgresql+asyncpg://veraks:{{ .Values.secrets.postgresPassword }}@veraks-postgr
 {{- define "veraks.databaseUrlApp" -}}
 postgresql+asyncpg://orakul_app:{{ .Values.secrets.appDbPassword }}@veraks-postgres:5432/veraks
 {{- end -}}
+
+{{/*
+Ссылка на образ приложения. Если задан digest — используем его, иначе тег.
+
+Плавающий :latest дважды приводил к тому, что деплой поднимал ПРЕДЫДУЩИЙ
+образ: статус сборки становится success раньше, чем образ дозаливается в
+реестр. Digest снимается в момент деплоя из самого реестра, поэтому
+подхватить не тот образ невозможно, а изменение digest'а меняет манифест —
+поды пересоздаются сами, без внешнего rollout restart.
+*/}}
+{{- define "veraks.image" -}}
+{{- if .digest -}}
+{{ .repository }}@{{ .digest }}
+{{- else -}}
+{{ .repository }}:{{ .tag }}
+{{- end -}}
+{{- end -}}

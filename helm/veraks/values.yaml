@@ -7,13 +7,22 @@ images:
   backend:
     repository: avvolob/veraks
     tag: latest
+    # Проставляется деплоем из реестра (см. veraks.image в _helpers.tpl):
+    # пусто — берётся tag, иначе образ тянется по digest.
+    digest: ""
   frontend:
     repository: avvolob/veraks-web
     tag: latest
+    # Проставляется деплоем из реестра (см. veraks.image в _helpers.tpl):
+    # пусто — берётся tag, иначе образ тянется по digest.
+    digest: ""
   # Мок-ЕСИА (dev/mock-esia) — отдельный лёгкий образ для демо.
   mockEsia:
     repository: avvolob/veraks-mock-esia
     tag: latest
+    # Проставляется деплоем из реестра (см. veraks.image в _helpers.tpl):
+    # пусто — берётся tag, иначе образ тянется по digest.
+    digest: ""
   postgres:
     repository: postgres
     tag: "15"
@@ -23,6 +32,9 @@ images:
   goctopus:
     repository: avvolob/goctopus
     tag: latest
+    # Проставляется деплоем из реестра (см. veraks.image в _helpers.tpl):
+    # пусто — берётся tag, иначе образ тянется по digest.
+    digest: ""
 
 # Образы приложений с тегом :latest — тянем всегда, иначе нода кэширует старый
 # слой под тем же тегом и деплой не подхватывает новую сборку (грабли :latest).

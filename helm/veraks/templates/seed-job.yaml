@@ -25,7 +25,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: seed
-          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          image: {{ include "veraks.image" .Values.images.backend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["python", "seed.py"]
           # T9: seed.py делает TRUNCATE — привилегии на это нет у роли

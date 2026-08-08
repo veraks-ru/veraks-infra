@@ -35,6 +35,25 @@ jobs:
           kubectl -n veraks patch serviceaccount default \
             -p '{"imagePullSecrets":[{"name":"veraks-regcred"}]}'
 
+      # Плавающий :latest дважды поднимал ПРЕДЫДУЩИЙ образ: статус сборки
+      # становится success раньше, чем образ дозаливается в реестр. Снимаем
+      # digest в момент деплоя — тогда катится ровно то, что лежит в реестре
+      # сейчас, а смена digest'а сама пересоздаёт поды.
+      - name: Снять digest'ы образов из реестра
+        id: digests
+        run: |
+          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login \
+            -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          for pair in backend:avvolob/veraks frontend:avvolob/veraks-web mockesia:avvolob/veraks-mock-esia; do
+            name="${pair%%:*}"; repo="${pair#*:}"
+            d=$(docker manifest inspect "$repo:latest" -v | jq -r '.Descriptor.digest // .[0].Descriptor.digest')
+            if [ -z "$d" ] || [ "$d" = "null" ]; then
+              echo "Не удалось получить digest для $repo" >&2; exit 1
+            fi
+            echo "$name=$d" >> "$GITHUB_OUTPUT"
+            echo "$repo -> $d"
+          done
+
       - uses: azure/setup-helm@v4
 
       - name: helm upgrade --install
@@ -42,6 +61,9 @@ jobs:
           helm upgrade --install veraks ./helm/veraks \
             --namespace veraks \
             --set seed.enabled=${{ inputs.seed }} \
+            --set images.backend.digest="${{ steps.digests.outputs.backend }}" \
+            --set images.frontend.digest="${{ steps.digests.outputs.frontend }}" \
+            --set images.mockEsia.digest="${{ steps.digests.outputs.mockesia }}" \
             --set secrets.snilsHmacKey="${{ secrets.VERAKS_SNILS_HMAC_KEY }}" \
             --set secrets.fieldEncryptionKey="${{ secrets.VERAKS_FIELD_ENCRYPTION_KEY }}" \
             --set secrets.jwtSecret="${{ secrets.VERAKS_JWT_SECRET }}" \
@@ -54,10 +76,10 @@ jobs:
             --set secrets.mailPassword="${{ secrets.VERAKS_MAIL_PASSWORD }}" \
             --wait --timeout 8m
 
-      - name: Перекат приложений на свежий :latest
-        # helm upgrade не перезапускает Deployment, если шаблон не изменился,
-        # поэтому новая сборка того же тега :latest иначе не подхватывается.
-        # Форсируем перекат приложений — imagePullPolicy: Always даёт свежий pull.
+      - name: Дождаться переката приложений
+        # Поды пересоздаёт сам helm: digest в манифесте меняется вместе с
+        # образом. Restart оставлен как страховка на случай, когда digest тот
+        # же (передеплой без новой сборки), и стоит дёшево.
         # Postgres/Redis (StatefulSet/пиновые теги) не трогаем.
         run: |
           apps="backend worker frontend goctopus mock-esia"

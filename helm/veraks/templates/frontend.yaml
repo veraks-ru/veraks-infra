@@ -34,7 +34,7 @@ spec:
         - name: frontend
           # Публичные URL (NEXT_PUBLIC_API_BASE / NEXT_PUBLIC_GOCTOPUS_URL) вшиты в
           # бандл на этапе сборки образа (build-args в GitHub Actions).
-          image: "{{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}"
+          image: {{ include "veraks.image" .Values.images.frontend }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           env:
             # metadataBase Next.js: база для абсолютных ссылок на OG-картинки
