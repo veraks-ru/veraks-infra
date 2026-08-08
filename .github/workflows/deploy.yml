@@ -46,7 +46,10 @@ jobs:
             -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           for pair in backend:avvolob/veraks frontend:avvolob/veraks-web mockesia:avvolob/veraks-mock-esia; do
             name="${pair%%:*}"; repo="${pair#*:}"
-            d=$(docker manifest inspect "$repo:latest" -v | jq -r '.Descriptor.digest // .[0].Descriptor.digest')
+            # imagetools отдаёт digest манифеста как есть и для одиночного
+            # образа, и для мультиарх-списка; docker manifest inspect -v в
+            # этих случаях возвращает разную форму (объект против массива).
+            d=$(docker buildx imagetools inspect "$repo:latest" --format '{{json .Manifest}}' | jq -r '.digest')
             if [ -z "$d" ] || [ "$d" = "null" ]; then
               echo "Не удалось получить digest для $repo" >&2; exit 1
             fi
