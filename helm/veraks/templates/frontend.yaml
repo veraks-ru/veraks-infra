@@ -51,5 +51,8 @@ spec:
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 10
+            # Секунды по умолчанию не хватало, когда узел занят соседними
+            # рестартами: под помечался неготовым, хотя сервер был жив.
+            timeoutSeconds: 3
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
